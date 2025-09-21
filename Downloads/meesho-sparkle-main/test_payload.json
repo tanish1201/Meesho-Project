@@ -1,0 +1,12 @@
+{
+  "product_id": "test_123",
+  "category": "apparel_top",
+  "images": [
+    {
+      "b64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    }
+  ],
+  "meta": {
+    "allow_wear": true
+  }
+}

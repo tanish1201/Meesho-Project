@@ -24,7 +24,6 @@ from PIL import Image, ImageEnhance, ImageFilter
 
 # LangGraph
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.sqlite import SqliteSaver
 
 # Gemini (LLM)
 import google.generativeai as genai
@@ -261,11 +260,11 @@ APPROVAL_USER_TEMPLATE = (
     "Category: {category}\n"
     "Goal: choose the best feed cover OR return feedback.\n\n"
     "For EACH image, produce an object:\n"
-    "{\n  'image_hash': str,\n  'relevance': float,\n  'reality': float,\n  'integrity': float,\n  'quality': float,\n  'verdict': 'APPROVE'|'NEEDS_EDIT'|'NEEDS_COMPLETE_CHANGE',\n  'reasons': [str,...]\n}\n\n"
+    "{{\n  'image_hash': str,\n  'relevance': float,\n  'reality': float,\n  'integrity': float,\n  'quality': float,\n  'verdict': 'APPROVE'|'NEEDS_EDIT'|'NEEDS_COMPLETE_CHANGE',\n  'reasons': [str,...]\n}}\n\n"
     "Rules:\n- Apparel: prefer on-model or presenter-holding; flat-lay only if nothing else exists.\n"
     "- Non-apparel: centered packshot/studio style.\n- Reality means photorealistic, not CGI/cartoon.\n- Integrity means product identity preserved (color/pattern/shape).\n- Quality is advisory only.\n\n"
     "After listing all per-image objects as 'per_image', also return a 'global' object:\n"
-    "{\n  'decision': 'APPROVED'|'NEEDS_EDIT'|'NEEDS_COMPLETE_CHANGE',\n  'chosen_image_hash': str|null,\n  'edit_brief': str|null,\n  'gen_brief': str|null\n}\n\n"
+    "{{\n  'decision': 'APPROVED'|'NEEDS_EDIT'|'NEEDS_COMPLETE_CHANGE',\n  'chosen_image_hash': str|null,\n  'edit_brief': str|null,\n  'gen_brief': str|null\n}}\n\n"
     "Output JSON with keys: per_image (list), global (object)."
 )
 
@@ -274,7 +273,7 @@ PROMPTER_EDIT_SYSTEM = (
 )
 PROMPTER_EDIT_USER = (
     "Context feedback:\n{feedback}\n\n"
-    "Return JSON like:\n{\n  'mode': 'quality_edit',\n  'keep_product_pixels': true,\n  'operations': ['exposure_correct','white_balance','mild_denoise','mild_sharpen','neutral_studio_bg','soft_shadow','center_crop_1x1'],\n  'hard_negatives': ['cartoon','illustration','3D render','CGI','over-airbrushed skin','added text'],\n  'acceptance': 'Re-approval must hit Relevance≥0.8, Reality≥0.7, Integrity≥0.95.'\n}\n"
+    "Return JSON like:\n{{\n  'mode': 'quality_edit',\n  'keep_product_pixels': true,\n  'operations': ['exposure_correct','white_balance','mild_denoise','mild_sharpen','neutral_studio_bg','soft_shadow','center_crop_1x1'],\n  'hard_negatives': ['cartoon','illustration','3D render','CGI','over-airbrushed skin','added text'],\n  'acceptance': 'Re-approval must hit Relevance≥0.8, Reality≥0.7, Integrity≥0.95.'\n}}\n"
 )
 
 PROMPTER_GEN_SYSTEM = (
@@ -282,7 +281,7 @@ PROMPTER_GEN_SYSTEM = (
 )
 PROMPTER_GEN_USER = (
     "Context feedback:\n{feedback}\nCategory: {category}\n\n"
-    "Return JSON like:\n{\n  'mode': 'compose_new',\n  'scene': 'presenter_holding' or 'on_model' or 'studio_packshot',\n  'background': 'neutral_studio_offwhite',\n  'camera': 'front, 50mm eq',\n  'lighting': 'softbox both sides, soft shadows',\n  'crop': '1x1 centered',\n  'preserve': ['color','pattern','silhouette'],\n  'forbid': ['logos','added text','CGI vibe'],\n  'acceptance': 'Re-approval must hit Relevance≥0.8, Reality≥0.7, Integrity≥0.95.'\n}\n"
+    "Return JSON like:\n{{\n  'mode': 'compose_new',\n  'scene': 'presenter_holding' or 'on_model' or 'studio_packshot',\n  'background': 'neutral_studio_offwhite',\n  'camera': 'front, 50mm eq',\n  'lighting': 'softbox both sides, soft shadows',\n  'crop': '1x1 centered',\n  'preserve': ['color','pattern','silhouette'],\n  'forbid': ['logos','added text','CGI vibe'],\n  'acceptance': 'Re-approval must hit Relevance≥0.8, Reality≥0.7, Integrity≥0.95.'\n}}\n"
 )
 
 EDITOR_SYSTEM = (
@@ -565,7 +564,6 @@ def node_persist(state: GraphState) -> GraphState:
 # -------------------------------
 
 def build_app():
-    memory = SqliteSaver(CHECKPOINT_PATH)
     g = StateGraph(GraphState)
 
     g.add_node("ingest", node_ingest)
@@ -611,7 +609,7 @@ def build_app():
     g.add_edge("prompter_generate", "generator")
     g.add_edge("generator", "reapproval")
 
-    return g.compile(checkpointer=memory)
+    return g.compile()
 
 
 # -------------------------------
