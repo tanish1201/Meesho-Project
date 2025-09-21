@@ -36,110 +36,93 @@ export interface HistoryEntry {
 }
 
 export async function runAnalysis(payload: AnalysisPayload): Promise<AnalysisResult> {
-  try {
-    // For Lovable platform, we'll use a mock response
-    console.log('🚀 Starting analysis with payload:', payload);
-    console.log('✅ Using mock API function - no HTTP requests');
-    
-    // Simulate processing time with realistic steps
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Generate different results based on product category
-    const routes = ['A', 'B', 'C'] as const;
-    const randomRoute = routes[Math.floor(Math.random() * routes.length)];
-    
-    const scores = {
-      A: { relevance: 0.92, reality: 0.88, quality: 0.85, overall: 0.89 },
-      B: { relevance: 0.89, reality: 0.91, quality: 0.87, overall: 0.90 },
-      C: { relevance: 0.85, reality: 0.89, quality: 0.92, overall: 0.88 }
-    };
-    
-    const currentScores = scores[randomRoute];
-    
-    const mockResult: AnalysisResult = {
-      run_id: `run_${Date.now()}`,
-      product_id: payload.product_id,
-      route: randomRoute,
-      best: {
-        generated: randomRoute !== 'A',
-        path: `/mock-output-${randomRoute.toLowerCase()}.png`,
-        source_hash: randomRoute === 'A' ? 'original_hash' : null,
-        final_score: currentScores.overall
-      },
-      iterations: randomRoute === 'A' ? 0 : 1,
-      candidates: randomRoute === 'A' ? [] : [
-        {
-          path: `/mock-candidate-${randomRoute.toLowerCase()}.png`,
-          mode: randomRoute === 'B' ? 'edit' : 'generate',
-          iter: 0
-        }
-      ],
-      feedback: {
-        why: randomRoute === 'A' 
-          ? ['Original image meets quality standards', 'No enhancement needed']
-          : randomRoute === 'B'
-          ? ['AI enhancement improved image quality', 'Better lighting and composition', 'Enhanced product visibility']
-          : ['AI generated new presentation', 'Improved marketplace appeal', 'Better product showcase'],
-        required_changes: randomRoute === 'A' 
-          ? []
-          : randomRoute === 'B'
-          ? ['Enhanced contrast', 'Improved background', 'Better lighting']
-          : ['New composition', 'Enhanced styling', 'Improved presentation']
+  console.log('🚀 MOCK ANALYSIS STARTED - No HTTP requests will be made');
+  console.log('📦 Payload received:', payload);
+  
+  // Simulate processing time
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Generate random route
+  const routes = ['A', 'B', 'C'] as const;
+  const randomRoute = routes[Math.floor(Math.random() * routes.length)];
+  
+  // Generate scores based on route
+  const scores = {
+    A: { relevance: 0.92, reality: 0.88, quality: 0.85, overall: 0.89 },
+    B: { relevance: 0.89, reality: 0.91, quality: 0.87, overall: 0.90 },
+    C: { relevance: 0.85, reality: 0.89, quality: 0.92, overall: 0.88 }
+  };
+  
+  const currentScores = scores[randomRoute];
+  
+  const result: AnalysisResult = {
+    run_id: `mock_run_${Date.now()}`,
+    product_id: payload.product_id,
+    route: randomRoute,
+    best: {
+      generated: randomRoute !== 'A',
+      path: `/mock-output-${randomRoute.toLowerCase()}.png`,
+      source_hash: randomRoute === 'A' ? 'original_hash' : null,
+      final_score: currentScores.overall
+    },
+    iterations: randomRoute === 'A' ? 0 : 1,
+    candidates: randomRoute === 'A' ? [] : [
+      {
+        path: `/mock-candidate-${randomRoute.toLowerCase()}.png`,
+        mode: randomRoute === 'B' ? 'edit' : 'generate',
+        iter: 0
       }
-    };
-    
-    console.log('✅ Analysis completed successfully:', mockResult);
-    return mockResult;
-  } catch (error) {
-    console.error('❌ Error in runAnalysis:', error);
-    throw new Error(`Mock analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+    ],
+    feedback: {
+      why: randomRoute === 'A' 
+        ? ['Original image meets quality standards', 'No enhancement needed']
+        : randomRoute === 'B'
+        ? ['AI enhancement improved image quality', 'Better lighting and composition', 'Enhanced product visibility']
+        : ['AI generated new presentation', 'Improved marketplace appeal', 'Better product showcase'],
+      required_changes: randomRoute === 'A' 
+        ? []
+        : randomRoute === 'B'
+        ? ['Enhanced contrast', 'Improved background', 'Better lighting']
+        : ['New composition', 'Enhanced styling', 'Improved presentation']
+    }
+  };
+  
+  console.log('✅ MOCK ANALYSIS COMPLETED:', result);
+  return result;
 }
 
 export async function getHistory(): Promise<HistoryEntry[]> {
-  // Mock history data for Lovable platform
+  console.log('📚 MOCK HISTORY REQUESTED - No HTTP requests will be made');
+  
   const now = Date.now();
   return [
     {
-      run_id: 'run_1758453985',
+      run_id: 'mock_run_1',
       product_id: 'P12345',
       route: 'B',
-      created_at: new Date(now - 300000).toISOString(), // 5 minutes ago
+      created_at: new Date(now - 300000).toISOString(),
       final_score: 0.89
     },
     {
-      run_id: 'run_1758453984',
+      run_id: 'mock_run_2',
       product_id: 'P12346',
       route: 'A',
-      created_at: new Date(now - 1800000).toISOString(), // 30 minutes ago
+      created_at: new Date(now - 1800000).toISOString(),
       final_score: 0.92
     },
     {
-      run_id: 'run_1758453983',
+      run_id: 'mock_run_3',
       product_id: 'P12347',
       route: 'C',
-      created_at: new Date(now - 3600000).toISOString(), // 1 hour ago
+      created_at: new Date(now - 3600000).toISOString(),
       final_score: 0.85
-    },
-    {
-      run_id: 'run_1758453982',
-      product_id: 'P12348',
-      route: 'B',
-      created_at: new Date(now - 7200000).toISOString(), // 2 hours ago
-      final_score: 0.91
-    },
-    {
-      run_id: 'run_1758453981',
-      product_id: 'P12349',
-      route: 'A',
-      created_at: new Date(now - 14400000).toISOString(), // 4 hours ago
-      final_score: 0.88
     }
   ];
 }
 
 export async function getHistoryDetail(runId: string): Promise<AnalysisResult> {
-  // Mock detailed history for Lovable platform
+  console.log('🔍 MOCK HISTORY DETAIL REQUESTED - No HTTP requests will be made');
+  
   const routes = ['A', 'B', 'C'] as const;
   const randomRoute = routes[Math.floor(Math.random() * routes.length)];
   
